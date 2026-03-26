@@ -18,4 +18,3 @@ public class GameState
 
     public PlayerRole DetectedRole { get; set; } = PlayerRole.Unknown;
 
-}
