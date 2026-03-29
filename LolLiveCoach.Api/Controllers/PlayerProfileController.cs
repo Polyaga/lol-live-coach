@@ -7,11 +7,11 @@ namespace LolLiveCoach.Api.Controllers;
 [Route("api/player-profile")]
 public class PlayerProfileController : ControllerBase
 {
-    private readonly RiotPlayerProfileService _riotPlayerProfileService;
+    private readonly PlayerProfileService _playerProfileService;
 
-    public PlayerProfileController(RiotPlayerProfileService riotPlayerProfileService)
+    public PlayerProfileController(PlayerProfileService playerProfileService)
     {
-        _riotPlayerProfileService = riotPlayerProfileService;
+        _playerProfileService = playerProfileService;
     }
 
     [HttpGet]
@@ -20,7 +20,7 @@ public class PlayerProfileController : ControllerBase
         [FromQuery] string? platformRegion,
         CancellationToken cancellationToken)
     {
-        var profile = await _riotPlayerProfileService.GetProfileAsync(riotId, platformRegion, cancellationToken);
+        var profile = await _playerProfileService.GetProfileAsync(riotId, platformRegion, cancellationToken);
         return Ok(profile);
     }
 }

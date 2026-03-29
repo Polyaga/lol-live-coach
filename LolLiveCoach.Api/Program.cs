@@ -25,9 +25,11 @@ builder.Services.AddHttpClient<LiveGameService>(client =>
 builder.Services.AddScoped<AdviceService>();
 builder.Services.AddScoped<EnemyTeamAnalyzer>();
 builder.Services.AddScoped<BuildRecommendationService>();
+builder.Services.AddScoped<PlayerProfileService>();
 builder.Services.AddScoped<RoleDetectorService>();
 builder.Services.AddScoped<SubscriptionAccessService>();
 builder.Services.AddHttpClient<RemotePlatformAccessService>();
+builder.Services.AddHttpClient<RemotePlayerProfileService>();
 builder.Services.AddHttpClient<RiotItemCatalogService>(client =>
 {
     client.BaseAddress = new Uri("https://ddragon.leagueoflegends.com/");
