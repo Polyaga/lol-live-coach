@@ -22,9 +22,7 @@ on:
       - "desktop-v*"
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
   group: desktop-release-${{ github.ref }}
@@ -33,9 +31,6 @@ concurrency:
 jobs:
   build-and-deploy:
     runs-on: windows-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
 
     steps:
       - name: Checkout
@@ -60,10 +55,17 @@ jobs:
             $releaseNotesFile = ""
           }
 
-          $updateFeedUrl = "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/desktop/$channel"
+          if ("${{ github.event_name }}" -eq "workflow_dispatch") {
+            $tag = "desktop-v$version"
+          } else {
+            $tag = "${{ github.ref_name }}"
+          }
+
+          $updateFeedUrl = "https://github.com/${{ github.repository }}"
 
           "version=$version" >> $env:GITHUB_OUTPUT
           "channel=$channel" >> $env:GITHUB_OUTPUT
+          "tag=$tag" >> $env:GITHUB_OUTPUT
           "release_notes_file=$releaseNotesFile" >> $env:GITHUB_OUTPUT
           "update_feed_url=$updateFeedUrl" >> $env:GITHUB_OUTPUT
 
@@ -74,7 +76,7 @@ jobs:
             -Version "${{ steps.vars.outputs.version }}" `
             -Channel "${{ steps.vars.outputs.channel }}" `
             -UpdateFeedUrl "${{ steps.vars.outputs.update_feed_url }}" `
-            -PlatformBaseUrl "${{ vars.DESKTOP_PLATFORM_BASE_URL }}" `
+            -PlatformBaseUrl "${{ vars.DESKTOP_PLATFORM_BASE_URL || 'https://lol-live-coach.vercel.app' }}" `
             -ReleaseNotesFile "${{ steps.vars.outputs.release_notes_file }}" `
             -SignTemplate "${{ secrets.VELOPACK_SIGN_TEMPLATE }}"
 
@@ -84,24 +86,29 @@ jobs:
           name: desktop-${{ steps.vars.outputs.version }}-${{ steps.vars.outputs.channel }}
           path: artifacts/desktop/release/win-x64/${{ steps.vars.outputs.channel }}
 
-      - name: Stage Pages content
+      - name: Publish GitHub release assets
         shell: pwsh
         run: |
-          $source = Join-Path $PWD "artifacts\desktop\release\win-x64\${{ steps.vars.outputs.channel }}"
-          $destination = Join-Path $PWD "artifacts\pages\desktop\${{ steps.vars.outputs.channel }}"
-          New-Item -ItemType Directory -Path $destination -Force | Out-Null
-          Get-ChildItem -LiteralPath $source -Force | ForEach-Object {
-            Copy-Item -LiteralPath $_.FullName -Destination $destination -Recurse -Force
+          $env:DOTNET_ROLL_FORWARD = "Major"
+          $arguments = @(
+            "tool", "run", "vpk",
+            "upload", "github",
+            "--outputDir", "artifacts/desktop/release/win-x64/${{ steps.vars.outputs.channel }}",
+            "--channel", "${{ steps.vars.outputs.channel }}",
+            "--repoUrl", "https://github.com/${{ github.repository }}",
+            "--token", "${{ secrets.GITHUB_TOKEN }}",
+            "--publish",
+            "--merge",
+            "--releaseName", "LoL Live Coach ${{ steps.vars.outputs.version }}",
+            "--tag", "${{ steps.vars.outputs.tag }}",
+            "--targetCommitish", "${{ github.sha }}"
+          )
+
+          if ("${{ steps.vars.outputs.channel }}" -ne "stable") {
+            $arguments += "--pre"
           }
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: artifacts/pages
-
-      - name: Deploy to GitHub Pages
-        id: deploy
-        uses: actions/deploy-pages@v4
+          & dotnet @arguments
+          if ($LASTEXITCODE -ne 0) {
+            throw "La publication GitHub Release a echoue."
+          }
