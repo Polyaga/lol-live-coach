@@ -1,0 +1,16 @@
+bin/
+obj/
+.vs/
+.codex-build/
+.dotnet-cli-home/
+artifacts/
+Releases/
+
+*.user
+*.suo
+
+LolLiveCoach.Web/node_modules/
+LolLiveCoach.Web/.next/
+LolLiveCoach.Web/.env.local
+LolLiveCoach.Web/.env.production.local
+LolLiveCoach.Web/.env.development.local

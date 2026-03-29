@@ -1,0 +1,855 @@
+<Window x:Class="LolLiveCoach.Desktop.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:models="clr-namespace:LolLiveCoach.Desktop.Models"
+        Title="LoL Live Coach Desktop"
+        Width="1240"
+        Height="860"
+        MinWidth="1100"
+        MinHeight="720"
+        Background="#08111D"
+        Foreground="{StaticResource TextBrush}"
+        WindowStartupLocation="CenterScreen">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/LolLiveCoach.Desktop;component/Resources/Styles/MainWindowResources.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Grid>
+        <Grid IsHitTestVisible="False">
+            <Ellipse Width="420"
+                     Height="420"
+                     Margin="-120,-140,0,0"
+                     HorizontalAlignment="Left"
+                     VerticalAlignment="Top"
+                     Fill="#194F9CF9" />
+            <Ellipse Width="360"
+                     Height="360"
+                     Margin="0,-90,-110,0"
+                     HorizontalAlignment="Right"
+                     VerticalAlignment="Top"
+                     Fill="#122DD4BF" />
+            <Ellipse Width="300"
+                     Height="300"
+                     Margin="0,0,-100,-70"
+                     HorizontalAlignment="Right"
+                     VerticalAlignment="Bottom"
+                     Fill="#12F59E0B" />
+        </Grid>
+
+        <Grid Margin="24">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="18" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0"
+                    Style="{StaticResource CardBorderStyle}"
+                    Background="{StaticResource HeaderBrush}"
+                    Padding="24">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1.3*" />
+                        <ColumnDefinition Width="24" />
+                        <ColumnDefinition Width="1.7*" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0">
+                        <Border HorizontalAlignment="Left"
+                                Padding="10,4"
+                                Background="#173A5E"
+                                CornerRadius="999">
+                            <TextBlock Text="PLAYER HUB"
+                                       Style="{StaticResource SectionEyebrowStyle}"
+                                       Foreground="#B8D7FF" />
+                        </Border>
+                        <TextBlock Margin="0,14,0,8"
+                                   FontSize="30"
+                                   FontWeight="SemiBold"
+                                   Text="Une vraie home pour preparer tes games."
+                                   TextWrapping="Wrap" />
+                        <TextBlock Style="{StaticResource BodyTextStyle}"
+                                   Text="Le header garde la connexion sous la main, et chaque page a maintenant un role clair : coach, profil, patchs et reglages." />
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Text="Connexion compte"
+                                   Style="{StaticResource SectionEyebrowStyle}" />
+                        <StackPanel x:Name="AccountLoginFormPanel"
+                                    Margin="0,12,0,0">
+                            <WrapPanel ItemHeight="74">
+                                <StackPanel Width="250"
+                                            Margin="0,0,12,0">
+                                    <TextBlock Text="Email"
+                                               Style="{StaticResource SectionEyebrowStyle}" />
+                                    <TextBox x:Name="AccountEmailTextBox"
+                                             Margin="0,8,0,0"
+                                             Style="{StaticResource FieldTextBoxStyle}" />
+                                </StackPanel>
+                                <StackPanel Width="200"
+                                            Margin="0,0,12,0">
+                                    <TextBlock Text="Mot de passe"
+                                               Style="{StaticResource SectionEyebrowStyle}" />
+                                    <PasswordBox x:Name="AccountPasswordBox"
+                                                 Margin="0,8,0,0"
+                                                 Style="{StaticResource FieldPasswordStyle}" />
+                                </StackPanel>
+                                <Button x:Name="LoginAccountButton"
+                                        Margin="0,24,0,0"
+                                        Click="LoginAccountButton_Click"
+                                        Content="Se connecter"
+                                        Style="{StaticResource PrimaryButtonStyle}" />
+                            </WrapPanel>
+                        </StackPanel>
+                        <Border x:Name="AccountConnectedPanel"
+                                Margin="0,12,0,0"
+                                Padding="16"
+                                Background="#132033"
+                                BorderBrush="#314863"
+                                BorderThickness="1"
+                                CornerRadius="18"
+                                Visibility="Collapsed">
+                            <DockPanel LastChildFill="False">
+                                <StackPanel>
+                                    <TextBlock Text="Session active"
+                                               Style="{StaticResource SectionEyebrowStyle}" />
+                                    <TextBlock x:Name="ConnectedAccountEmailText"
+                                               Margin="0,8,0,0"
+                                               FontSize="20"
+                                               FontWeight="SemiBold"
+                                               TextWrapping="Wrap" />
+                                </StackPanel>
+                                <Button x:Name="LogoutAccountButton"
+                                        DockPanel.Dock="Right"
+                                        Margin="18,0,0,0"
+                                        VerticalAlignment="Center"
+                                        Click="LogoutAccountButton_Click"
+                                        Content="Se deconnecter"
+                                        Style="{StaticResource SecondaryButtonStyle}" />
+                            </DockPanel>
+                        </Border>
+                        <TextBlock x:Name="AccountSessionStatusText"
+                                   Margin="0,14,0,0"
+                                   Style="{StaticResource BodyTextStyle}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <TabControl Grid.Row="2"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Padding="0">
+                <TabItem Header="Coach"
+                         Style="{StaticResource TabHeaderStyle}">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel x:Name="CoachPageRoot"
+                                    Margin="0,6,0,6">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="2*" />
+                                    <ColumnDefinition Width="18" />
+                                    <ColumnDefinition Width="1.1*" />
+                                </Grid.ColumnDefinitions>
+
+                                <Border Grid.Column="0"
+                                        Style="{StaticResource CardBorderStyle}"
+                                        Background="{StaticResource HeroBrush}">
+                                    <StackPanel>
+                                        <TextBlock Text="Session"
+                                                   Style="{StaticResource SectionEyebrowStyle}" />
+                                        <TextBlock x:Name="PrepTitleText"
+                                                   Margin="0,10,0,10"
+                                                   FontSize="30"
+                                                   FontWeight="SemiBold"
+                                                   TextWrapping="Wrap" />
+                                        <TextBlock x:Name="PrepDetailText"
+                                                   Style="{StaticResource BodyTextStyle}" />
+
+                                        <Border Margin="0,18,0,0"
+                                                Padding="16"
+                                                Background="#14395D"
+                                                BorderBrush="#4F9CF9"
+                                                BorderThickness="1"
+                                                CornerRadius="18">
+                                            <StackPanel>
+                                                <TextBlock Text="Prochaine action"
+                                                           Style="{StaticResource SectionEyebrowStyle}"
+                                                           Foreground="#B8D7FF" />
+                                                <TextBlock x:Name="NextActionText"
+                                                           Margin="0,8,0,0"
+                                                           FontSize="15"
+                                                           FontWeight="SemiBold"
+                                                           TextWrapping="Wrap" />
+                                            </StackPanel>
+                                        </Border>
+
+                                        <Grid Margin="0,18,0,0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="1.2*" />
+                                                <ColumnDefinition Width="12" />
+                                                <ColumnDefinition Width="1*" />
+                                                <ColumnDefinition Width="12" />
+                                                <ColumnDefinition Width="1*" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <Border Grid.Column="0"
+                                                    Style="{StaticResource MiniCardBorderStyle}">
+                                                <StackPanel>
+                                                    <TextBlock Text="Etat du coach"
+                                                               Style="{StaticResource SectionEyebrowStyle}" />
+                                                    <TextBlock x:Name="ConnectionStatusText"
+                                                               Margin="0,8,0,6"
+                                                               Style="{StaticResource MetricValueStyle}" />
+                                                    <TextBlock x:Name="BackendDetailText"
+                                                               Style="{StaticResource BodyTextStyle}" />
+                                                </StackPanel>
+                                            </Border>
+
+                                            <Border Grid.Column="2"
+                                                    Style="{StaticResource MiniCardBorderStyle}">
+                                                <StackPanel>
+                                                    <TextBlock Text="Statut de session"
+                                                               Style="{StaticResource SectionEyebrowStyle}" />
+                                                    <TextBlock x:Name="SessionStateText"
+                                                               Margin="0,8,0,6"
+                                                               Style="{StaticResource MetricValueStyle}" />
+                                                    <TextBlock x:Name="DisplayModeText"
+                                                               Style="{StaticResource BodyTextStyle}" />
+                                                </StackPanel>
+                                            </Border>
+
+                                            <Border Grid.Column="4"
+                                                    Style="{StaticResource MiniCardBorderStyle}">
+                                                <StackPanel>
+                                                    <TextBlock Text="Dernier refresh"
+                                                               Style="{StaticResource SectionEyebrowStyle}" />
+                                                    <TextBlock x:Name="LastUpdatedText"
+                                                               Margin="0,8,0,6"
+                                                               Style="{StaticResource MetricValueStyle}" />
+                                                    <TextBlock Style="{StaticResource BodyTextStyle}"
+                                                               Text="Le tableau se met a jour automatiquement." />
+                                                </StackPanel>
+                                            </Border>
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+
+                                <StackPanel Grid.Column="2">
+                                    <Border Style="{StaticResource CardBorderStyle}">
+                                        <StackPanel>
+                                            <TextBlock Text="Profil rapide"
+                                                       Style="{StaticResource SectionEyebrowStyle}" />
+                                            <TextBlock x:Name="RoleText"
+                                                       Margin="0,10,0,8"
+                                                       FontSize="26"
+                                                       FontWeight="SemiBold"
+                                                       TextWrapping="Wrap" />
+                                            <TextBlock x:Name="KdaText"
+                                                       Style="{StaticResource BodyTextStyle}" />
+                                        </StackPanel>
+                                    </Border>
+
+                                    <Border Margin="0,18,0,0"
+                                            Style="{StaticResource CardBorderStyle}">
+                                        <StackPanel>
+                                            <TextBlock Text="En game"
+                                                       Style="{StaticResource SectionEyebrowStyle}" />
+                                            <TextBlock x:Name="LiveCommandText"
+                                                       Margin="0,10,0,0"
+                                                       Style="{StaticResource BodyTextStyle}" />
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </Grid>
+
+                            <Grid Margin="0,18,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="1.4*" />
+                                    <ColumnDefinition Width="18" />
+                                    <ColumnDefinition Width="1*" />
+                                </Grid.ColumnDefinitions>
+
+                                <Border Grid.Column="0"
+                                        Style="{StaticResource CardBorderStyle}">
+                                    <StackPanel>
+                                        <TextBlock Text="Conseil principal"
+                                                   Style="{StaticResource SectionEyebrowStyle}" />
+                                        <TextBlock x:Name="GamePhaseText"
+                                                   Margin="0,10,0,10"
+                                                   FontSize="16"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="#B8D7FF"
+                                                   TextWrapping="Wrap" />
+                                        <TextBlock x:Name="MainAdviceText"
+                                                   FontSize="24"
+                                                   FontWeight="SemiBold"
+                                                   TextWrapping="Wrap" />
+                                        <Border x:Name="PremiumLockBanner"
+                                                Margin="0,18,0,0"
+                                                Padding="14"
+                                                Background="#3A2312"
+                                                BorderBrush="#F59E0B"
+                                                BorderThickness="1"
+                                                CornerRadius="16">
+                                            <TextBlock Text="Mode Free : les details supplementaires, les alertes live et les panneaux Tab complets restent verrouilles."
+                                                       Style="{StaticResource BodyTextStyle}"
+                                                       Foreground="#FCD08A" />
+                                        </Border>
+                                        <TextBlock x:Name="SecondaryAdviceText"
+                                                   Margin="0,18,0,0"
+                                                   Style="{StaticResource BodyTextStyle}" />
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Grid.Column="2"
+                                        Style="{StaticResource CardBorderStyle}">
+                                    <StackPanel>
+                                        <TextBlock Text="Plan avant la prochaine queue"
+                                                   Style="{StaticResource SectionEyebrowStyle}" />
+
+                                        <Grid Margin="0,16,0,0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="14" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <Border Width="34"
+                                                    Height="34"
+                                                    Background="#17314F"
+                                                    CornerRadius="17">
+                                                <TextBlock HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center"
+                                                           FontWeight="SemiBold"
+                                                           Text="1" />
+                                            </Border>
+                                            <StackPanel Grid.Column="2">
+                                                <TextBlock x:Name="QuickStepOneTitleText"
+                                                           FontSize="16"
+                                                           FontWeight="SemiBold"
+                                                           TextWrapping="Wrap" />
+                                                <TextBlock x:Name="QuickStepOneDetailText"
+                                                           Margin="0,6,0,0"
+                                                           Style="{StaticResource BodyTextStyle}" />
+                                            </StackPanel>
+                                        </Grid>
+
+                                        <Grid Margin="0,18,0,0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="14" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <Border Width="34"
+                                                    Height="34"
+                                                    Background="#17314F"
+                                                    CornerRadius="17">
+                                                <TextBlock HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center"
+                                                           FontWeight="SemiBold"
+                                                           Text="2" />
+                                            </Border>
+                                            <StackPanel Grid.Column="2">
+                                                <TextBlock x:Name="QuickStepTwoTitleText"
+                                                           FontSize="16"
+                                                           FontWeight="SemiBold"
+                                                           TextWrapping="Wrap" />
+                                                <TextBlock x:Name="QuickStepTwoDetailText"
+                                                           Margin="0,6,0,0"
+                                                           Style="{StaticResource BodyTextStyle}" />
+                                            </StackPanel>
+                                        </Grid>
+
+                                        <Grid Margin="0,18,0,0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="14" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <Border Width="34"
+                                                    Height="34"
+                                                    Background="#17314F"
+                                                    CornerRadius="17">
+                                                <TextBlock HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center"
+                                                           FontWeight="SemiBold"
+                                                           Text="3" />
+                                            </Border>
+                                            <StackPanel Grid.Column="2">
+                                                <TextBlock x:Name="QuickStepThreeTitleText"
+                                                           FontSize="16"
+                                                           FontWeight="SemiBold"
+                                                           TextWrapping="Wrap" />
+                                                <TextBlock x:Name="QuickStepThreeDetailText"
+                                                           Margin="0,6,0,0"
+                                                           Style="{StaticResource BodyTextStyle}" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+
+                            <Grid Margin="0,18,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="1*" />
+                                    <ColumnDefinition Width="18" />
+                                    <ColumnDefinition Width="1*" />
+                                </Grid.ColumnDefinitions>
+
+                                <Border Grid.Column="0"
+                                        Style="{StaticResource CardBorderStyle}">
+                                    <StackPanel>
+                                        <TextBlock Text="Alertes a surveiller"
+                                                   Style="{StaticResource SectionEyebrowStyle}" />
+                                        <ItemsControl x:Name="AlertsItemsControl"
+                                                      Margin="0,16,0,0"
+                                                      ItemTemplate="{StaticResource StringCardTemplate}" />
+                                        <TextBlock x:Name="EmptyAlertsText"
+                                                   Margin="0,12,0,0"
+                                                   Style="{StaticResource BodyTextStyle}" />
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Grid.Column="2"
+                                        Style="{StaticResource CardBorderStyle}">
+                                    <StackPanel>
+                                        <TextBlock Text="Pistes de build"
+                                                   Style="{StaticResource SectionEyebrowStyle}" />
+                                        <ItemsControl x:Name="BuildTipsItemsControl"
+                                                      Margin="0,16,0,0"
+                                                      ItemTemplate="{StaticResource BuildRecommendationTemplate}" />
+                                        <TextBlock x:Name="EmptyBuildTipsText"
+                                                   Margin="0,12,0,0"
+                                                   Style="{StaticResource BodyTextStyle}"
+                                                   Text="Aucune priorite build a afficher pour le moment." />
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+
+                <TabItem Header="Profil"
+                         Style="{StaticResource TabHeaderStyle}">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel x:Name="ProfilePageRoot"
+                                    Margin="0,6,0,6">
+                            <Border Style="{StaticResource CardBorderStyle}"
+                                    Background="{StaticResource HeroBrush}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="1.4*" />
+                                        <ColumnDefinition Width="18" />
+                                        <ColumnDefinition Width="1.2*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="Profil joueur"
+                                                   Style="{StaticResource SectionEyebrowStyle}" />
+                                        <TextBlock x:Name="PlayerProfileStatusText"
+                                                   Margin="0,10,0,8"
+                                                   FontSize="28"
+                                                   FontWeight="SemiBold"
+                                                   TextWrapping="Wrap" />
+                                        <TextBlock x:Name="PlayerProfileSummaryText"
+                                                   Style="{StaticResource BodyTextStyle}" />
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock Text="Renseigne ton Riot ID"
+                                                   Style="{StaticResource SectionEyebrowStyle}" />
+                                        <TextBox x:Name="PlayerRiotIdTextBox"
+                                                 Margin="0,8,0,0"
+                                                 Style="{StaticResource FieldTextBoxStyle}" />
+                                        <Grid Margin="0,14,0,0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="1*" />
+                                                <ColumnDefinition Width="12" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <ComboBox x:Name="PlayerPlatformRegionComboBox"
+                                                      Grid.Column="0"
+                                                      Style="{StaticResource FieldComboBoxStyle}">
+                                                <ComboBoxItem Tag="EUW1"
+                                                              Content="Europe West" />
+                                                <ComboBoxItem Tag="EUN1"
+                                                              Content="Europe Nordic &amp; East" />
+                                                <ComboBoxItem Tag="NA1"
+                                                              Content="North America" />
+                                                <ComboBoxItem Tag="KR"
+                                                              Content="Korea" />
+                                                <ComboBoxItem Tag="BR1"
+                                                              Content="Brazil" />
+                                                <ComboBoxItem Tag="JP1"
+                                                              Content="Japan" />
+                                                <ComboBoxItem Tag="LA1"
+                                                              Content="LAN" />
+                                                <ComboBoxItem Tag="LA2"
+                                                              Content="LAS" />
+                                                <ComboBoxItem Tag="OC1"
+                                                              Content="Oceania" />
+                                                <ComboBoxItem Tag="TR1"
+                                                              Content="Turkey" />
+                                                <ComboBoxItem Tag="RU"
+                                                              Content="Russia" />
+                                            </ComboBox>
+                                            <Button x:Name="RefreshPlayerProfileButton"
+                                                    Grid.Column="2"
+                                                    Click="RefreshPlayerProfileButton_Click"
+                                                    Content="Mettre a jour"
+                                                    Style="{StaticResource PrimaryButtonStyle}" />
+                                        </Grid>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <Grid Margin="0,18,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="1*" />
+                                    <ColumnDefinition Width="14" />
+                                    <ColumnDefinition Width="1*" />
+                                    <ColumnDefinition Width="14" />
+                                    <ColumnDefinition Width="1*" />
+                                    <ColumnDefinition Width="14" />
+                                    <ColumnDefinition Width="1*" />
+                                </Grid.ColumnDefinitions>
+
+                                <Border Grid.Column="0"
+                                        Style="{StaticResource MiniCardBorderStyle}">
+                                    <StackPanel>
+                                        <TextBlock Text="Rang SoloQ"
+                                                   Style="{StaticResource SectionEyebrowStyle}" />
+                                        <TextBlock x:Name="PlayerRankText"
+                                                   Margin="0,8,0,0"
+                                                   Style="{StaticResource MetricValueStyle}" />
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Grid.Column="2"
+                                        Style="{StaticResource MiniCardBorderStyle}">
+                                    <StackPanel>
+                                        <TextBlock Text="Niveau"
+                                                   Style="{StaticResource SectionEyebrowStyle}" />
+                                        <TextBlock x:Name="PlayerLevelText"
+                                                   Margin="0,8,0,0"
+                                                   Style="{StaticResource MetricValueStyle}" />
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Grid.Column="4"
+                                        Style="{StaticResource MiniCardBorderStyle}">
+                                    <StackPanel>
+                                        <TextBlock Text="KDA recent"
+                                                   Style="{StaticResource SectionEyebrowStyle}" />
+                                        <TextBlock x:Name="PlayerRecentKdaText"
+                                                   Margin="0,8,0,0"
+                                                   Style="{StaticResource MetricValueStyle}" />
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Grid.Column="6"
+                                        Style="{StaticResource MiniCardBorderStyle}">
+                                    <StackPanel>
+                                        <TextBlock Text="Winrate recent"
+                                                   Style="{StaticResource SectionEyebrowStyle}" />
+                                        <TextBlock x:Name="PlayerRecentWinRateText"
+                                                   Margin="0,8,0,0"
+                                                   Style="{StaticResource MetricValueStyle}" />
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+
+                            <Grid Margin="0,18,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="1*" />
+                                    <ColumnDefinition Width="18" />
+                                    <ColumnDefinition Width="1.35*" />
+                                </Grid.ColumnDefinitions>
+
+                                <Border Grid.Column="0"
+                                        Style="{StaticResource CardBorderStyle}">
+                                    <StackPanel>
+                                        <TextBlock Text="Lecture rapide"
+                                                   Style="{StaticResource SectionEyebrowStyle}" />
+                                        <TextBlock x:Name="PlayerTrendText"
+                                                   Margin="0,12,0,0"
+                                                   Style="{StaticResource BodyTextStyle}" />
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Grid.Column="2"
+                                        Style="{StaticResource CardBorderStyle}">
+                                    <StackPanel>
+                                        <TextBlock Text="Dernieres parties"
+                                                   Style="{StaticResource SectionEyebrowStyle}" />
+                                        <ItemsControl x:Name="RecentMatchesItemsControl"
+                                                      Margin="0,16,0,0"
+                                                      ItemTemplate="{StaticResource RecentMatchTemplate}" />
+                                        <TextBlock x:Name="EmptyPlayerMatchesText"
+                                                   Margin="0,12,0,0"
+                                                   Style="{StaticResource BodyTextStyle}" />
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+
+                <TabItem Header="Patchs"
+                         Style="{StaticResource TabHeaderStyle}">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel x:Name="PatchPageRoot"
+                                    Margin="0,6,0,6">
+                            <Border Style="{StaticResource CardBorderStyle}"
+                                    Background="{StaticResource HeroBrush}">
+                                <StackPanel>
+                                    <TextBlock Text="Revue meta personnalisee"
+                                               Style="{StaticResource SectionEyebrowStyle}" />
+                                    <TextBlock x:Name="PatchHeadlineText"
+                                               Margin="0,10,0,10"
+                                               FontSize="30"
+                                               FontWeight="SemiBold"
+                                               TextWrapping="Wrap" />
+                                    <TextBlock x:Name="PatchSummaryText"
+                                               Style="{StaticResource BodyTextStyle}" />
+                                </StackPanel>
+                            </Border>
+
+                            <Grid Margin="0,18,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="1.2*" />
+                                    <ColumnDefinition Width="18" />
+                                    <ColumnDefinition Width="1*" />
+                                </Grid.ColumnDefinitions>
+
+                                <Border Grid.Column="0"
+                                        Style="{StaticResource CardBorderStyle}">
+                                    <StackPanel>
+                                        <TextBlock Text="Ce qu'il faut retenir"
+                                                   Style="{StaticResource SectionEyebrowStyle}" />
+                                        <ItemsControl x:Name="PatchFocusItemsControl"
+                                                      Margin="0,16,0,0"
+                                                      ItemTemplate="{StaticResource StringCardTemplate}" />
+                                        <TextBlock x:Name="EmptyPatchFocusText"
+                                                   Margin="0,12,0,0"
+                                                   Style="{StaticResource BodyTextStyle}" />
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Grid.Column="2"
+                                        Style="{StaticResource CardBorderStyle}">
+                                    <StackPanel>
+                                        <TextBlock Text="Ton pool recent"
+                                                   Style="{StaticResource SectionEyebrowStyle}" />
+                                        <ItemsControl x:Name="PatchChampionPoolItemsControl"
+                                                      Margin="0,16,0,0"
+                                                      ItemTemplate="{StaticResource StringCardTemplate}" />
+                                        <TextBlock x:Name="EmptyPatchChampionPoolText"
+                                                   Margin="0,12,0,0"
+                                                   Style="{StaticResource BodyTextStyle}" />
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+
+                            <Border Margin="0,18,0,0"
+                                    Style="{StaticResource CardBorderStyle}">
+                                <StackPanel>
+                                    <TextBlock Text="Comment utiliser cette page"
+                                               Style="{StaticResource SectionEyebrowStyle}" />
+                                    <TextBlock Margin="0,12,0,0"
+                                               Style="{StaticResource BodyTextStyle}"
+                                               Text="Elle ne recopie pas des patch notes brutes : elle traduit plutot ce que le meta et tes parties recentes racontent pour toi." />
+                                    <TextBlock Margin="0,10,0,0"
+                                               Style="{StaticResource BodyTextStyle}"
+                                               Text="Avant de lancer la queue, regarde les points de focus puis compare-les a tes champions les plus joues. C'est la page qui doit t'aider a choisir ton angle de progression du jour." />
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+
+                <TabItem Header="Parametres"
+                         Style="{StaticResource TabHeaderStyle}">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled">
+                        <Grid x:Name="SettingsPageRoot"
+                              Margin="0,6,0,6">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1.1*" />
+                                <ColumnDefinition Width="18" />
+                                <ColumnDefinition Width="1*" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0">
+                                <Border Style="{StaticResource CardBorderStyle}">
+                                    <StackPanel>
+                                        <TextBlock Text="Experience de jeu"
+                                                   Style="{StaticResource SectionEyebrowStyle}" />
+                                        <TextBlock Margin="0,10,0,0"
+                                                   Style="{StaticResource BodyTextStyle}"
+                                                   Text="Regle ici le comportement du desktop et de l'overlay avant la partie." />
+
+                                        <Grid Margin="0,18,0,0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="1*" />
+                                                <ColumnDefinition Width="14" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0">
+                                                <TextBlock Text="Position de l'overlay"
+                                                           Style="{StaticResource SectionEyebrowStyle}" />
+                                                <ComboBox x:Name="OverlayPositionComboBox"
+                                                          Margin="0,8,0,0"
+                                                          Style="{StaticResource FieldComboBoxStyle}">
+                                                    <ComboBoxItem Tag="TopLeft"
+                                                                  Content="Haut gauche" />
+                                                    <ComboBoxItem Tag="TopRight"
+                                                                  Content="Haut droite" />
+                                                    <ComboBoxItem Tag="BottomLeft"
+                                                                  Content="Bas gauche" />
+                                                    <ComboBoxItem Tag="BottomRight"
+                                                                  Content="Bas droite" />
+                                                </ComboBox>
+                                            </StackPanel>
+                                            <Button x:Name="OverlayPreviewButton"
+                                                    Grid.Column="2"
+                                                    Margin="0,24,0,0"
+                                                    Click="ToggleOverlayPreviewButton_Click"
+                                                    Content="Previsualiser l'overlay"
+                                                    Style="{StaticResource SecondaryButtonStyle}" />
+                                        </Grid>
+
+                                        <CheckBox x:Name="AutoStartBackendCheckBox"
+                                                  Margin="0,18,0,0"
+                                                  Content="Relancer automatiquement le suivi live si besoin"
+                                                  Foreground="{StaticResource TextBrush}" />
+
+                                        <WrapPanel Margin="0,18,0,0">
+                                            <Button Margin="0,0,12,0"
+                                                    Click="SaveSettingsButton_Click"
+                                                    Content="Enregistrer"
+                                                    Style="{StaticResource PrimaryButtonStyle}" />
+                                            <Button Margin="0,0,12,0"
+                                                    Click="RestartBackendButton_Click"
+                                                    Content="Relancer le suivi live"
+                                                    Style="{StaticResource SecondaryButtonStyle}" />
+                                        </WrapPanel>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Margin="0,18,0,0"
+                                        Style="{StaticResource CardBorderStyle}">
+                                    <StackPanel>
+                                        <TextBlock Text="Reglages avances"
+                                                   Style="{StaticResource SectionEyebrowStyle}" />
+                                        <TextBlock Margin="0,10,0,0"
+                                                   Style="{StaticResource BodyTextStyle}"
+                                                   Text="A toucher seulement si tu changes d'environnement ou si on te le demande pour du support." />
+
+                                        <Expander Margin="0,16,0,0"
+                                                  Foreground="{StaticResource TextBrush}"
+                                                  Header="Afficher les adresses techniques">
+                                            <StackPanel Margin="0,12,0,0">
+                                                <TextBlock Text="Service live"
+                                                           Style="{StaticResource SectionEyebrowStyle}" />
+                                                <TextBox x:Name="ApiBaseUrlTextBox"
+                                                         Margin="0,8,0,0"
+                                                         Style="{StaticResource FieldTextBoxStyle}" />
+                                                <TextBlock Margin="0,14,0,0"
+                                                           Text="Plateforme compte"
+                                                           Style="{StaticResource SectionEyebrowStyle}" />
+                                                <TextBox x:Name="PlatformBaseUrlTextBox"
+                                                         Margin="0,8,0,0"
+                                                         Style="{StaticResource FieldTextBoxStyle}" />
+                                            </StackPanel>
+                                        </Expander>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2">
+                                <Border Style="{StaticResource CardBorderStyle}"
+                                        Background="{StaticResource HeroBrush}">
+                                    <StackPanel>
+                                        <TextBlock Text="Acces"
+                                                   Style="{StaticResource SectionEyebrowStyle}" />
+                                        <DockPanel Margin="0,12,0,0">
+                                            <Border x:Name="AccessTierBadgeBorder"
+                                                    DockPanel.Dock="Right"
+                                                    Padding="12,6"
+                                                    BorderThickness="1"
+                                                    CornerRadius="999">
+                                                <TextBlock x:Name="AccessTierBadgeText"
+                                                           FontSize="12"
+                                                           FontWeight="SemiBold" />
+                                            </Border>
+                                            <StackPanel>
+                                                <TextBlock x:Name="AccessStatusTitleText"
+                                                           FontSize="26"
+                                                           FontWeight="SemiBold"
+                                                           TextWrapping="Wrap" />
+                                                <TextBlock x:Name="AccessStatusDetailText"
+                                                           Margin="0,8,0,0"
+                                                           Style="{StaticResource BodyTextStyle}" />
+                                            </StackPanel>
+                                        </DockPanel>
+
+                                        <Border Margin="0,18,0,0"
+                                                Padding="16"
+                                                Background="#132033"
+                                                BorderBrush="#2E425C"
+                                                BorderThickness="1"
+                                                CornerRadius="16">
+                                            <StackPanel>
+                                                <TextBlock Text="Formule free"
+                                                           Style="{StaticResource SectionEyebrowStyle}" />
+                                                <TextBlock x:Name="FreePlanSummaryText"
+                                                           Margin="0,8,0,0"
+                                                           Style="{StaticResource BodyTextStyle}"
+                                                           Text="Hub desktop, conseils de base et suivi de preparation." />
+                                            </StackPanel>
+                                        </Border>
+
+                                        <Border Margin="0,12,0,0"
+                                                Padding="16"
+                                                Background="#132033"
+                                                BorderBrush="#2E425C"
+                                                BorderThickness="1"
+                                                CornerRadius="16">
+                                            <StackPanel>
+                                                <TextBlock Text="Formule premium"
+                                                           Style="{StaticResource SectionEyebrowStyle}" />
+                                                <TextBlock x:Name="PremiumPlanSummaryText"
+                                                           Margin="0,8,0,0"
+                                                           Style="{StaticResource BodyTextStyle}"
+                                                           Text="Overlay live complet, alertes enrichies, historique Tab et routines avancees." />
+                                            </StackPanel>
+                                        </Border>
+
+                                        <WrapPanel Margin="0,18,0,0">
+                                            <Button x:Name="UpgradeButton"
+                                                    Margin="0,0,12,0"
+                                                    Click="UpgradeButton_Click"
+                                                    Content="Passer au premium"
+                                                    Style="{StaticResource PrimaryButtonStyle}" />
+                                            <Button x:Name="ManageSubscriptionButton"
+                                                    Click="ManageSubscriptionButton_Click"
+                                                    Content="Gerer l'abonnement"
+                                                    Style="{StaticResource SecondaryButtonStyle}" />
+                                        </WrapPanel>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Grid>
+                    </ScrollViewer>
+                </TabItem>
+            </TabControl>
+        </Grid>
+    </Grid>
+</Window>

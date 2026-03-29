@@ -65,6 +65,19 @@ public class RoleDetectorService
         if (player.Items.Any(item => SupportItemIds.Contains(item.ItemId)))
             return PlayerRole.Support;
 
+        var positionRole = player.Position?.ToUpperInvariant() switch
+        {
+            "TOP" => PlayerRole.Top,
+            "JUNGLE" => PlayerRole.Jungle,
+            "MIDDLE" => PlayerRole.Mid,
+            "UTILITY" => PlayerRole.Support,
+            "BOTTOM" => PlayerRole.Adc,
+            _ => PlayerRole.Unknown
+        };
+
+        if (positionRole is not PlayerRole.Unknown)
+            return positionRole;
+
         // 3. Fallback champion pool
         if (!string.IsNullOrWhiteSpace(player.ChampionName))
         {

@@ -10,10 +10,9 @@ public class LiveGameService
     private readonly RoleDetectorService _roleDetectorService;
 
     public LiveGameService(
-    HttpClient httpClient,
-    ILogger<LiveGameService> logger,
-    RoleDetectorService roleDetectorService
-    )
+        HttpClient httpClient,
+        ILogger<LiveGameService> logger,
+        RoleDetectorService roleDetectorService)
     {
         _httpClient = httpClient;
         _logger = logger;
@@ -38,10 +37,7 @@ public class LiveGameService
 
             var activePlayer = ParseActivePlayer(root);
             var allPlayers = ParseAllPlayers(root);
-            
-            // TODO: remplacer cette heuristique par une vraie correspondance avec activePlayer.summonerName
-            var localPlayer = allPlayers.FirstOrDefault(p => !p.IsBot);
-
+            var localPlayer = ResolveLocalPlayer(activePlayer, allPlayers);
             var detectedRole = localPlayer is not null ? _roleDetectorService.DetectRole(localPlayer) : PlayerRole.Unknown;
 
             _logger.LogInformation("Active player detected: {SummonerName}", activePlayer?.SummonerName);
@@ -52,24 +48,23 @@ public class LiveGameService
                     "Player: {SummonerName} | Team: {Team} | IsBot: {IsBot}",
                     player.SummonerName,
                     player.Team,
-                    player.IsBot
-                );
+                    player.IsBot);
             }
 
-            // Test brutal : en Practice Tool / custom, le seul joueur non-bot = joueur local
-            var localPlayerTeam = allPlayers
-                .Where(p => !p.IsBot)
-                .Select(p => p.Team)
-                .FirstOrDefault();
+            var localPlayerTeam = localPlayer?.Team
+                ?? allPlayers
+                    .Where(player => !player.IsBot)
+                    .Select(player => player.Team)
+                    .FirstOrDefault();
 
             _logger.LogInformation("Resolved local player team: {LocalPlayerTeam}", localPlayerTeam);
 
             var allies = allPlayers
-                .Where(p => string.Equals(p.Team, localPlayerTeam, StringComparison.OrdinalIgnoreCase))
+                .Where(player => string.Equals(player.Team, localPlayerTeam, StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
             var enemies = allPlayers
-                .Where(p => !string.Equals(p.Team, localPlayerTeam, StringComparison.OrdinalIgnoreCase))
+                .Where(player => !string.Equals(player.Team, localPlayerTeam, StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
             return new GameState
@@ -78,6 +73,7 @@ public class LiveGameService
                 GameMode = GetString(root, "gameData", "gameMode"),
                 GameTimeSeconds = GetDouble(root, "gameData", "gameTime"),
                 ActivePlayer = activePlayer,
+                LocalPlayer = localPlayer,
                 LocalPlayerTeam = localPlayerTeam,
                 AllPlayers = allPlayers,
                 Allies = allies,
@@ -86,6 +82,16 @@ public class LiveGameService
                 DetectedRole = detectedRole
             };
         }
+        catch (TaskCanceledException)
+        {
+            _logger.LogDebug("LoL Live Client API timed out. No live game data available.");
+            return new GameState { IsInGame = false };
+        }
+        catch (HttpRequestException)
+        {
+            _logger.LogDebug("LoL Live Client API is unreachable. No game is currently exposed.");
+            return new GameState { IsInGame = false };
+        }
         catch (Exception ex)
         {
             _logger.LogInformation(ex, "Unable to reach LoL Live Client API. Probably no game is running.");
@@ -93,14 +99,41 @@ public class LiveGameService
         }
     }
 
+    private static PlayerSummary? ResolveLocalPlayer(ActivePlayer? activePlayer, List<PlayerSummary> allPlayers)
+    {
+        if (!string.IsNullOrWhiteSpace(activePlayer?.SummonerName))
+        {
+            var exactMatch = allPlayers.FirstOrDefault(player =>
+                string.Equals(player.SummonerName, activePlayer.SummonerName, StringComparison.OrdinalIgnoreCase));
+
+            if (exactMatch is not null)
+            {
+                return exactMatch;
+            }
+        }
+
+        var humanPlayers = allPlayers.Where(player => !player.IsBot).ToList();
+
+        if (humanPlayers.Count == 1)
+        {
+            return humanPlayers[0];
+        }
+
+        return humanPlayers.FirstOrDefault();
+    }
+
     private static ActivePlayer? ParseActivePlayer(JsonElement root)
     {
         if (!root.TryGetProperty("activePlayer", out var activePlayerElement))
+        {
             return null;
+        }
 
         JsonElement championStats = default;
         if (activePlayerElement.TryGetProperty("championStats", out var stats))
+        {
             championStats = stats;
+        }
 
         return new ActivePlayer
         {
@@ -108,6 +141,9 @@ public class LiveGameService
             Level = GetInt(activePlayerElement, "level"),
             CurrentHealth = championStats.ValueKind != JsonValueKind.Undefined ? GetDouble(championStats, "currentHealth") : 0,
             MaxHealth = championStats.ValueKind != JsonValueKind.Undefined ? GetDouble(championStats, "maxHealth") : 0,
+            ResourceType = championStats.ValueKind != JsonValueKind.Undefined ? GetString(championStats, "resourceType") : null,
+            CurrentMana = championStats.ValueKind != JsonValueKind.Undefined ? GetDouble(championStats, "resourceValue") : 0,
+            MaxMana = championStats.ValueKind != JsonValueKind.Undefined ? GetDouble(championStats, "resourceMax") : 0,
             CurrentGold = GetDouble(root, "activePlayer", "currentGold"),
             IsDead = championStats.ValueKind != JsonValueKind.Undefined && GetDouble(championStats, "currentHealth") <= 0
         };
@@ -118,7 +154,9 @@ public class LiveGameService
         var players = new List<PlayerSummary>();
 
         if (!root.TryGetProperty("allPlayers", out var allPlayersElement) || allPlayersElement.ValueKind != JsonValueKind.Array)
+        {
             return players;
+        }
 
         foreach (var player in allPlayersElement.EnumerateArray())
         {
@@ -127,11 +165,16 @@ public class LiveGameService
                 SummonerName = GetString(player, "summonerName"),
                 ChampionName = GetString(player, "championName"),
                 Team = GetString(player, "team"),
+                Position = GetString(player, "position"),
                 IsBot = GetBool(player, "isBot"),
+                IsDead = GetBool(player, "isDead"),
+                RespawnTimer = GetDouble(player, "respawnTimer"),
                 Level = GetInt(player, "level"),
                 Kills = GetInt(player, "scores", "kills"),
                 Deaths = GetInt(player, "scores", "deaths"),
                 Assists = GetInt(player, "scores", "assists"),
+                CreepScore = GetInt(player, "scores", "creepScore"),
+                WardScore = GetDouble(player, "scores", "wardScore"),
                 Items = ParseItems(player)
             });
         }
@@ -144,7 +187,9 @@ public class LiveGameService
         var items = new List<ItemSummary>();
 
         if (!player.TryGetProperty("items", out var itemsElement) || itemsElement.ValueKind != JsonValueKind.Array)
+        {
             return items;
+        }
 
         foreach (var item in itemsElement.EnumerateArray())
         {
@@ -164,21 +209,61 @@ public class LiveGameService
         var events = new List<GameEvent>();
 
         if (!root.TryGetProperty("events", out var eventsWrapper))
+        {
             return events;
+        }
 
         if (!eventsWrapper.TryGetProperty("Events", out var eventsElement) || eventsElement.ValueKind != JsonValueKind.Array)
+        {
             return events;
+        }
 
         foreach (var evt in eventsElement.EnumerateArray())
         {
             events.Add(new GameEvent
             {
+                EventId = GetInt(evt, "EventID"),
                 EventName = GetString(evt, "EventName"),
-                EventTime = GetDouble(evt, "EventTime")
+                EventTime = GetDouble(evt, "EventTime"),
+                KillerName = GetString(evt, "KillerName"),
+                VictimName = GetString(evt, "VictimName"),
+                Assisters = GetStringArray(evt, "Assisters"),
+                TurretKilled = GetString(evt, "TurretKilled"),
+                InhibKilled = GetString(evt, "InhibKilled"),
+                DragonType = GetString(evt, "DragonType"),
+                Stolen = GetFlexibleBool(evt, "Stolen"),
+                KillStreak = GetInt(evt, "KillStreak"),
+                Acer = GetString(evt, "Acer"),
+                AcingTeam = GetString(evt, "AcingTeam")
             });
         }
 
         return events;
+    }
+
+    private static List<string> GetStringArray(JsonElement element, params string[] path)
+    {
+        var current = element;
+
+        foreach (var key in path)
+        {
+            if (!current.TryGetProperty(key, out current))
+            {
+                return [];
+            }
+        }
+
+        if (current.ValueKind != JsonValueKind.Array)
+        {
+            return [];
+        }
+
+        return current.EnumerateArray()
+            .Where(item => item.ValueKind == JsonValueKind.String)
+            .Select(item => item.GetString())
+            .Where(value => !string.IsNullOrWhiteSpace(value))
+            .Cast<string>()
+            .ToList();
     }
 
     private static string? GetString(JsonElement element, params string[] path)
@@ -188,7 +273,9 @@ public class LiveGameService
         foreach (var key in path)
         {
             if (!current.TryGetProperty(key, out current))
+            {
                 return null;
+            }
         }
 
         return current.ValueKind == JsonValueKind.String ? current.GetString() : current.ToString();
@@ -201,7 +288,9 @@ public class LiveGameService
         foreach (var key in path)
         {
             if (!current.TryGetProperty(key, out current))
+            {
                 return 0;
+            }
         }
 
         return current.ValueKind == JsonValueKind.Number && current.TryGetDouble(out var value) ? value : 0;
@@ -214,7 +303,9 @@ public class LiveGameService
         foreach (var key in path)
         {
             if (!current.TryGetProperty(key, out current))
+            {
                 return 0;
+            }
         }
 
         return current.ValueKind == JsonValueKind.Number && current.TryGetInt32(out var value) ? value : 0;
@@ -227,10 +318,33 @@ public class LiveGameService
         foreach (var key in path)
         {
             if (!current.TryGetProperty(key, out current))
+            {
                 return false;
+            }
         }
 
         return current.ValueKind == JsonValueKind.True
             || (current.ValueKind == JsonValueKind.False && current.GetBoolean());
+    }
+
+    private static bool GetFlexibleBool(JsonElement element, params string[] path)
+    {
+        var current = element;
+
+        foreach (var key in path)
+        {
+            if (!current.TryGetProperty(key, out current))
+            {
+                return false;
+            }
+        }
+
+        return current.ValueKind switch
+        {
+            JsonValueKind.True => true,
+            JsonValueKind.False => false,
+            JsonValueKind.String => bool.TryParse(current.GetString(), out var value) && value,
+            _ => false
+        };
     }
 }

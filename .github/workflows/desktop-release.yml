@@ -1,0 +1,107 @@
+name: desktop-release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version a publier (ex: 0.1.0)"
+        required: true
+        type: string
+      channel:
+        description: "Canal Velopack"
+        required: false
+        default: "stable"
+        type: string
+      release_notes_file:
+        description: "Fichier markdown de release notes (optionnel)"
+        required: false
+        default: ""
+        type: string
+  push:
+    tags:
+      - "desktop-v*"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: desktop-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: windows-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Resolve release inputs
+        id: vars
+        shell: pwsh
+        run: |
+          if ("${{ github.event_name }}" -eq "workflow_dispatch") {
+            $version = "${{ inputs.version }}"
+            $channel = "${{ inputs.channel }}"
+            $releaseNotesFile = "${{ inputs.release_notes_file }}"
+          } else {
+            $version = "${{ github.ref_name }}" -replace '^desktop-v', ''
+            $channel = "stable"
+            $releaseNotesFile = ""
+          }
+
+          $updateFeedUrl = "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/desktop/$channel"
+
+          "version=$version" >> $env:GITHUB_OUTPUT
+          "channel=$channel" >> $env:GITHUB_OUTPUT
+          "release_notes_file=$releaseNotesFile" >> $env:GITHUB_OUTPUT
+          "update_feed_url=$updateFeedUrl" >> $env:GITHUB_OUTPUT
+
+      - name: Publish desktop release
+        shell: pwsh
+        run: |
+          ./scripts/publish-desktop.ps1 `
+            -Version "${{ steps.vars.outputs.version }}" `
+            -Channel "${{ steps.vars.outputs.channel }}" `
+            -UpdateFeedUrl "${{ steps.vars.outputs.update_feed_url }}" `
+            -PlatformBaseUrl "${{ vars.DESKTOP_PLATFORM_BASE_URL }}" `
+            -ReleaseNotesFile "${{ steps.vars.outputs.release_notes_file }}" `
+            -SignTemplate "${{ secrets.VELOPACK_SIGN_TEMPLATE }}"
+
+      - name: Upload release artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-${{ steps.vars.outputs.version }}-${{ steps.vars.outputs.channel }}
+          path: artifacts/desktop/release/win-x64/${{ steps.vars.outputs.channel }}
+
+      - name: Stage Pages content
+        shell: pwsh
+        run: |
+          $source = Join-Path $PWD "artifacts\desktop\release\win-x64\${{ steps.vars.outputs.channel }}"
+          $destination = Join-Path $PWD "artifacts\pages\desktop\${{ steps.vars.outputs.channel }}"
+          New-Item -ItemType Directory -Path $destination -Force | Out-Null
+          Get-ChildItem -LiteralPath $source -Force | ForEach-Object {
+            Copy-Item -LiteralPath $_.FullName -Destination $destination -Recurse -Force
+          }
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: artifacts/pages
+
+      - name: Deploy to GitHub Pages
+        id: deploy
+        uses: actions/deploy-pages@v4

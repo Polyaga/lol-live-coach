@@ -1,0 +1,29 @@
+{
+  "name": "lol-live-coach-web",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:migrate:deploy": "prisma migrate deploy",
+    "seed:test-users": "node scripts/seed-test-users.cjs"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.6.0",
+    "@prisma/client": "^7.6.0",
+    "@tailwindcss/postcss": "^4.2.2",
+    "@types/node": "^25.5.0",
+    "dotenv": "^17.3.1",
+    "next": "latest",
+    "pg": "^8.20.0",
+    "postcss": "^8.5.8",
+    "prisma": "^7.6.0",
+    "react": "latest",
+    "react-dom": "latest",
+    "stripe": "^21.0.1",
+    "tailwindcss": "^4.2.2",
+    "typescript": "^6.0.2"
+  }
+}

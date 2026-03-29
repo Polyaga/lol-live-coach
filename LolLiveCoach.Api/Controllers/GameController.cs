@@ -1,3 +1,4 @@
+using LolLiveCoach.Api.Models;
 using LolLiveCoach.Api.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,12 +11,18 @@ public class GameController : ControllerBase
     private readonly LiveGameService _liveGameService;
     private readonly AdviceService _adviceService;
     private readonly EnemyTeamAnalyzer _enemyTeamAnalyzer;
+    private readonly SubscriptionAccessService _subscriptionAccessService;
 
-    public GameController(LiveGameService liveGameService, AdviceService adviceService, EnemyTeamAnalyzer enemyTeamAnalyzer)
+    public GameController(
+        LiveGameService liveGameService,
+        AdviceService adviceService,
+        EnemyTeamAnalyzer enemyTeamAnalyzer,
+        SubscriptionAccessService subscriptionAccessService)
     {
         _liveGameService = liveGameService;
         _adviceService = adviceService;
         _enemyTeamAnalyzer = enemyTeamAnalyzer;
+        _subscriptionAccessService = subscriptionAccessService;
     }
 
     [HttpGet("game")]
@@ -29,9 +36,25 @@ public class GameController : ControllerBase
     public async Task<IActionResult> GetAdvice(CancellationToken cancellationToken)
     {
         var state = await _liveGameService.GetGameStateAsync(cancellationToken);
-        var advice = _adviceService.BuildAdvice(state);
+        var advice = await _adviceService.BuildAdviceAsync(state, cancellationToken);
+        var access = await _subscriptionAccessService.GetCurrentAccessAsync(cancellationToken);
 
-        return Ok(advice);
+        return Ok(_subscriptionAccessService.ApplyAdviceEntitlements(advice, access));
+    }
+
+    [HttpGet("snapshot")]
+    public async Task<IActionResult> GetSnapshot(CancellationToken cancellationToken)
+    {
+        var state = await _liveGameService.GetGameStateAsync(cancellationToken);
+        var advice = await _adviceService.BuildAdviceAsync(state, cancellationToken);
+        var access = await _subscriptionAccessService.GetCurrentAccessAsync(cancellationToken);
+
+        return Ok(new CoachSnapshotResponse
+        {
+            Game = state,
+            Advice = _subscriptionAccessService.ApplyAdviceEntitlements(advice, access),
+            Access = access
+        });
     }
 
     [HttpGet("enemy-profile")]
