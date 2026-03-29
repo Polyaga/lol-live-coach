@@ -73,7 +73,7 @@ public partial class HistoryOverlayWindow : Window
             return;
         }
 
-        var workArea = SystemParameters.WorkArea;
+        var workArea = FloatingWindowChrome.GetPlacementArea(this);
         Left = settings.OverlayPosition is OverlayPosition.TopLeft or OverlayPosition.BottomLeft
             ? workArea.Left + WindowMargin
             : workArea.Right - Width - WindowMargin;

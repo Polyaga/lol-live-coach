@@ -62,14 +62,12 @@ public partial class NotificationBubbleWindow : Window
         if (settings.OverlayLeft.HasValue && settings.OverlayTop.HasValue)
         {
             Left = settings.OverlayLeft.Value;
-            Top = Math.Max(
-                SystemParameters.WorkArea.Top + WindowMargin,
-                settings.OverlayTop.Value - ActualHeight - BubbleGap);
+            Top = settings.OverlayTop.Value - ActualHeight - BubbleGap;
             FloatingWindowChrome.ClampToWorkArea(this);
             return;
         }
 
-        var workArea = SystemParameters.WorkArea;
+        var workArea = FloatingWindowChrome.GetPlacementArea(this);
         Left = settings.OverlayPosition is OverlayPosition.TopLeft or OverlayPosition.BottomLeft
             ? workArea.Left + WindowMargin
             : workArea.Right - Width - WindowMargin;

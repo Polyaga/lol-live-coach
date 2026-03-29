@@ -94,7 +94,7 @@ public partial class BuildOverlayWindow : Window
             return;
         }
 
-        var workArea = SystemParameters.WorkArea;
+        var workArea = FloatingWindowChrome.GetPlacementArea(this);
         var alignLeft = settings.OverlayPosition is OverlayPosition.TopRight or OverlayPosition.BottomRight;
         Left = alignLeft
             ? workArea.Left + WindowMargin
