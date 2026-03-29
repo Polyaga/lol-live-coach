@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="LolLiveCoach.Api/LolLiveCoach.Api.csproj" />
+  <Project Path="LolLiveCoach.Desktop/LolLiveCoach.Desktop.csproj" />
+</Solution>

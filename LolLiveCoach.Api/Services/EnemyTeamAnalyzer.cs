@@ -30,6 +30,18 @@ public class EnemyTeamAnalyzer
         "Cho'Gath", "Sejuani", "Zac", "Rammus", "Volibear", "Maokai", "Shen", "Amumu"
     };
 
+    private static readonly HashSet<string> EngageChampions = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "Nocturne", "Hecarim", "Vi", "Jarvan IV", "Malphite", "Zac", "Sejuani", "Rammus",
+        "Leona", "Nautilus", "Alistar", "Amumu", "Diana", "Fiddlesticks", "Ornn"
+    };
+
+    private static readonly HashSet<string> PickChampions = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "Blitzcrank", "Thresh", "Pyke", "Morgana", "Lux", "Ahri", "Syndra", "Annie",
+        "Elise", "Evelynn", "Nidalee", "Zoe", "Neeko", "Rengar"
+    };
+
     public EnemyTeamProfile Analyze(IEnumerable<PlayerSummary> enemies)
     {
         var enemyList = enemies.ToList();
@@ -46,7 +58,13 @@ public class EnemyTeamAnalyzer
                 !string.IsNullOrWhiteSpace(e.ChampionName) && SustainChampions.Contains(e.ChampionName)),
 
             FrontlineCount = enemyList.Count(e =>
-                !string.IsNullOrWhiteSpace(e.ChampionName) && FrontlineChampions.Contains(e.ChampionName))
+                !string.IsNullOrWhiteSpace(e.ChampionName) && FrontlineChampions.Contains(e.ChampionName)),
+
+            EngageCount = enemyList.Count(e =>
+                !string.IsNullOrWhiteSpace(e.ChampionName) && EngageChampions.Contains(e.ChampionName)),
+
+            PickCount = enemyList.Count(e =>
+                !string.IsNullOrWhiteSpace(e.ChampionName) && PickChampions.Contains(e.ChampionName))
         };
     }
 }

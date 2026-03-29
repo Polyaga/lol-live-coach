@@ -7,6 +7,7 @@ public class GameState
     public double GameTimeSeconds { get; set; }
 
     public ActivePlayer? ActivePlayer { get; set; }
+    public PlayerSummary? LocalPlayer { get; set; }
 
     public string? LocalPlayerTeam { get; set; }
 
@@ -17,4 +18,5 @@ public class GameState
     public List<GameEvent> Events { get; set; } = new();
 
     public PlayerRole DetectedRole { get; set; } = PlayerRole.Unknown;
+}
 

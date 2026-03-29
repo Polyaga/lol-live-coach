@@ -1,0 +1,158 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum AccessGrantType {
+  PREMIUM
+}
+
+model User {
+  id                    String                 @id @default(uuid()) @db.Uuid
+  email                 String                 @unique
+  passwordHash          String
+  displayName           String?
+  role                  UserRole               @default(USER)
+  adminRoleId           String?                @db.Uuid
+  stripeCustomerId      String?                @unique
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  accessGrants          AccessGrant[]          @relation("UserAccessGrants")
+  adminActivityLogs     AdminActivityLog[]     @relation("AdminActionActor")
+  adminRole             AdminRole?             @relation(fields: [adminRoleId], references: [id], onDelete: SetNull)
+  ambassadorApplications AmbassadorApplication[]
+  desktopTokens         DesktopToken[]
+  grantedAccessGrants   AccessGrant[]          @relation("AccessGrantedByUser")
+  sessions              WebSession[]
+  subscriptions         Subscription[]
+}
+
+model AdminRole {
+  id          String   @id @default(uuid()) @db.Uuid
+  key         String   @unique
+  name        String
+  description String?
+  permissions String[]
+  isSystem    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  users       User[]
+}
+
+model WebSession {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @db.Uuid
+  tokenHash  String   @unique
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  lastSeenAt DateTime @default(now())
+  userAgent  String?
+  ipAddress  String?
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model DesktopToken {
+  id         String    @id @default(uuid()) @db.Uuid
+  userId     String    @db.Uuid
+  name       String
+  tokenHash  String    @unique
+  expiresAt  DateTime?
+  lastUsedAt DateTime?
+  revokedAt  DateTime?
+  createdAt  DateTime  @default(now())
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Subscription {
+  id                   String   @id @default(uuid()) @db.Uuid
+  userId               String   @db.Uuid
+  stripeSubscriptionId String   @unique
+  stripeCustomerId     String
+  stripePriceId        String
+  stripeStatus         String
+  planKey              String?
+  billingInterval      String?
+  currentPeriodEnd     DateTime?
+  cancelAtPeriodEnd    Boolean  @default(false)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([stripeCustomerId])
+}
+
+model AccessGrant {
+  id              String          @id @default(uuid()) @db.Uuid
+  userId          String          @db.Uuid
+  type            AccessGrantType @default(PREMIUM)
+  reason          String
+  notes           String?
+  startsAt        DateTime        @default(now())
+  endsAt          DateTime?
+  grantedByUserId String?         @db.Uuid
+  revokedAt       DateTime?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  grantedByUser   User?           @relation("AccessGrantedByUser", fields: [grantedByUserId], references: [id], onDelete: SetNull)
+  user            User            @relation("UserAccessGrants", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([grantedByUserId])
+  @@index([type])
+}
+
+model AmbassadorApplication {
+  id              String    @id @default(uuid()) @db.Uuid
+  userId          String?   @db.Uuid
+  fullName        String
+  email           String
+  channelName     String
+  platform        String?
+  channelUrl      String
+  audienceSummary String?
+  motivation      String
+  status          String    @default("pending")
+  commissionRate  Decimal   @default(0.10) @db.Decimal(5, 4)
+  accessGranted   Boolean   @default(false)
+  accessGrantedAt DateTime?
+  affiliateCode   String?   @unique
+  referredRevenue Decimal   @default(0) @db.Decimal(12, 2)
+  paidOutAmount   Decimal   @default(0) @db.Decimal(12, 2)
+  adminNotes      String?
+  lastReferralAt  DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  user            User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([email])
+  @@index([status])
+}
+
+model AdminActivityLog {
+  id          String   @id @default(uuid()) @db.Uuid
+  actorUserId String?  @db.Uuid
+  action      String
+  entityType  String
+  entityId    String?
+  summary     String
+  details     String?
+  createdAt   DateTime @default(now())
+  actorUser   User?    @relation("AdminActionActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([actorUserId])
+  @@index([entityType])
+}

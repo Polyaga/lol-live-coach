@@ -1,0 +1,287 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:models="clr-namespace:LolLiveCoach.Desktop.Models">
+    <LinearGradientBrush x:Key="HeaderBrush"
+                         StartPoint="0,0"
+                         EndPoint="1,1">
+        <GradientStop Offset="0"
+                      Color="#D3101B2D" />
+        <GradientStop Offset="1"
+                      Color="#D20E1728" />
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="HeroBrush"
+                         StartPoint="0,0"
+                         EndPoint="1,1">
+        <GradientStop Offset="0"
+                      Color="#CC10243D" />
+        <GradientStop Offset="1"
+                      Color="#CC162033" />
+    </LinearGradientBrush>
+    <Style x:Key="CardBorderStyle"
+           TargetType="Border">
+        <Setter Property="Background"
+                Value="#C9101728" />
+        <Setter Property="BorderBrush"
+                Value="#28364B" />
+        <Setter Property="BorderThickness"
+                Value="1" />
+        <Setter Property="CornerRadius"
+                Value="20" />
+        <Setter Property="Padding"
+                Value="22" />
+    </Style>
+    <Style x:Key="MiniCardBorderStyle"
+           TargetType="Border"
+           BasedOn="{StaticResource CardBorderStyle}">
+        <Setter Property="Padding"
+                Value="18" />
+        <Setter Property="CornerRadius"
+                Value="18" />
+    </Style>
+    <Style x:Key="SectionEyebrowStyle"
+           TargetType="TextBlock">
+        <Setter Property="Foreground"
+                Value="#8FB3D9" />
+        <Setter Property="FontSize"
+                Value="12" />
+        <Setter Property="FontWeight"
+                Value="SemiBold" />
+        <Setter Property="TextWrapping"
+                Value="Wrap" />
+    </Style>
+    <Style x:Key="BodyTextStyle"
+           TargetType="TextBlock">
+        <Setter Property="Foreground"
+                Value="{StaticResource MutedBrush}" />
+        <Setter Property="FontSize"
+                Value="14" />
+        <Setter Property="LineHeight"
+                Value="21" />
+        <Setter Property="TextWrapping"
+                Value="Wrap" />
+    </Style>
+    <Style x:Key="MetricValueStyle"
+           TargetType="TextBlock">
+        <Setter Property="Foreground"
+                Value="{StaticResource TextBrush}" />
+        <Setter Property="FontSize"
+                Value="24" />
+        <Setter Property="FontWeight"
+                Value="SemiBold" />
+        <Setter Property="TextWrapping"
+                Value="Wrap" />
+    </Style>
+    <Style x:Key="FieldTextBoxStyle"
+           TargetType="TextBox">
+        <Setter Property="Padding"
+                Value="12,10" />
+        <Setter Property="Background"
+                Value="#132033" />
+        <Setter Property="Foreground"
+                Value="{StaticResource TextBrush}" />
+        <Setter Property="BorderBrush"
+                Value="#314863" />
+        <Setter Property="BorderThickness"
+                Value="1" />
+    </Style>
+    <Style x:Key="FieldPasswordStyle"
+           TargetType="PasswordBox">
+        <Setter Property="Padding"
+                Value="12,10" />
+        <Setter Property="Background"
+                Value="#132033" />
+        <Setter Property="Foreground"
+                Value="{StaticResource TextBrush}" />
+        <Setter Property="BorderBrush"
+                Value="#314863" />
+        <Setter Property="BorderThickness"
+                Value="1" />
+    </Style>
+    <Style x:Key="FieldComboBoxStyle"
+           TargetType="ComboBox">
+        <Setter Property="Padding"
+                Value="10,8" />
+        <Setter Property="Background"
+                Value="#132033" />
+        <Setter Property="Foreground"
+                Value="{StaticResource TextBrush}" />
+        <Setter Property="BorderBrush"
+                Value="#314863" />
+        <Setter Property="BorderThickness"
+                Value="1" />
+    </Style>
+    <Style x:Key="PrimaryButtonStyle"
+           TargetType="Button">
+        <Setter Property="Foreground"
+                Value="White" />
+        <Setter Property="Background"
+                Value="{StaticResource AccentBrush}" />
+        <Setter Property="BorderBrush"
+                Value="{StaticResource AccentBrush}" />
+        <Setter Property="BorderThickness"
+                Value="1" />
+        <Setter Property="Padding"
+                Value="16,10" />
+        <Setter Property="FontWeight"
+                Value="SemiBold" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="14"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="Center"
+                                          VerticalAlignment="Center" />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style x:Key="SecondaryButtonStyle"
+           TargetType="Button"
+           BasedOn="{StaticResource PrimaryButtonStyle}">
+        <Setter Property="Foreground"
+                Value="{StaticResource TextBrush}" />
+        <Setter Property="Background"
+                Value="#12233A" />
+        <Setter Property="BorderBrush"
+                Value="#314863" />
+    </Style>
+    <Style x:Key="TabHeaderStyle"
+           TargetType="TabItem">
+        <Setter Property="Foreground"
+                Value="{StaticResource MutedBrush}" />
+        <Setter Property="FontWeight"
+                Value="SemiBold" />
+        <Setter Property="Margin"
+                Value="0,0,12,0" />
+        <Setter Property="Padding"
+                Value="18,10" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TabItem">
+                    <Border x:Name="TabBorder"
+                            Padding="{TemplateBinding Padding}"
+                            Background="#122033"
+                            BorderBrush="#2B3C52"
+                            BorderThickness="1"
+                            CornerRadius="16">
+                        <ContentPresenter HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          ContentSource="Header" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsSelected"
+                                 Value="True">
+                            <Setter Property="Foreground"
+                                    Value="{StaticResource TextBrush}" />
+                            <Setter TargetName="TabBorder"
+                                    Property="Background"
+                                    Value="#214B79" />
+                            <Setter TargetName="TabBorder"
+                                    Property="BorderBrush"
+                                    Value="#5CA4F7" />
+                        </Trigger>
+                        <Trigger Property="IsMouseOver"
+                                 Value="True">
+                            <Setter TargetName="TabBorder"
+                                    Property="Background"
+                                    Value="#17314F" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <DataTemplate x:Key="StringCardTemplate">
+        <Border Margin="0,0,0,12"
+                Padding="14"
+                Background="#132033"
+                BorderBrush="#2E425C"
+                BorderThickness="1"
+                CornerRadius="16">
+            <TextBlock Text="{Binding}"
+                       Style="{StaticResource BodyTextStyle}"
+                       Foreground="{StaticResource TextBrush}" />
+        </Border>
+    </DataTemplate>
+    <DataTemplate x:Key="BuildRecommendationTemplate"
+                  DataType="{x:Type models:ItemRecommendationDto}">
+        <Border Margin="0,0,0,12"
+                Padding="14"
+                Background="#132033"
+                BorderBrush="#2E425C"
+                BorderThickness="1"
+                CornerRadius="16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="12" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Border Width="42"
+                        Height="42"
+                        Background="#214B79"
+                        CornerRadius="12">
+                    <TextBlock HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               FontWeight="SemiBold"
+                               Text="{Binding ShortName}" />
+                </Border>
+                <StackPanel Grid.Column="2">
+                    <TextBlock FontSize="16"
+                               FontWeight="SemiBold"
+                               Text="{Binding ItemName}"
+                               TextWrapping="Wrap" />
+                    <TextBlock Margin="0,6,0,0"
+                               Style="{StaticResource BodyTextStyle}"
+                               Text="{Binding Reason}" />
+                    <TextBlock Margin="0,6,0,0"
+                               Style="{StaticResource BodyTextStyle}"
+                               Foreground="#B8D7FF"
+                               Text="{Binding PurchaseHint}" />
+                </StackPanel>
+            </Grid>
+        </Border>
+    </DataTemplate>
+    <DataTemplate x:Key="RecentMatchTemplate"
+                  DataType="{x:Type models:PlayerRecentMatchDto}">
+        <Border Margin="0,0,0,12"
+                Padding="14"
+                Background="#132033"
+                BorderBrush="#2E425C"
+                BorderThickness="1"
+                CornerRadius="16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel>
+                    <TextBlock FontSize="16"
+                               FontWeight="SemiBold"
+                               Text="{Binding ChampionName}"
+                               TextWrapping="Wrap" />
+                    <TextBlock Margin="0,6,0,0"
+                               Style="{StaticResource BodyTextStyle}"
+                               Text="{Binding ScoreLine}" />
+                    <TextBlock Margin="0,6,0,0"
+                               Style="{StaticResource BodyTextStyle}"
+                               Text="{Binding MetaLine}" />
+                </StackPanel>
+                <StackPanel Grid.Column="1"
+                            HorizontalAlignment="Right">
+                    <TextBlock HorizontalAlignment="Right"
+                               FontWeight="SemiBold"
+                               Text="{Binding ResultLabel}" />
+                    <TextBlock Margin="0,6,0,0"
+                               HorizontalAlignment="Right"
+                               Style="{StaticResource BodyTextStyle}"
+                               Text="{Binding PlayedAtLabel}" />
+                </StackPanel>
+            </Grid>
+        </Border>
+    </DataTemplate>
+</ResourceDictionary>

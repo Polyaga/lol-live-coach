@@ -1,0 +1,52 @@
+<Window x:Class="LolLiveCoach.Desktop.NotificationBubbleWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Width="300"
+        AllowsTransparency="True"
+        Background="Transparent"
+        Foreground="{StaticResource TextBrush}"
+        ResizeMode="NoResize"
+        ShowActivated="False"
+        ShowInTaskbar="False"
+        SizeToContent="Height"
+        Topmost="True"
+        WindowStyle="None">
+    <Border Padding="10"
+            CornerRadius="14"
+            Background="#E8111826"
+            BorderBrush="#CC4F9CF9"
+            BorderThickness="0.9">
+        <StackPanel>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <TextBlock FontSize="10"
+                           FontWeight="SemiBold"
+                           Foreground="{StaticResource AccentBrush}"
+                           Text="Conseil" />
+                <TextBlock x:Name="BubbleTimeText"
+                           Grid.Column="1"
+                           FontSize="10"
+                           Foreground="{StaticResource MutedBrush}"
+                           Text="00:00:00" />
+            </Grid>
+
+            <TextBlock x:Name="BubbleMessageText"
+                       Margin="0,6,0,0"
+                       FontSize="15"
+                       FontWeight="SemiBold"
+                       TextWrapping="Wrap"
+                       Text="Le conseil principal apparait ici." />
+
+            <TextBlock x:Name="BubbleSubMessageText"
+                       Margin="0,5,0,0"
+                       FontSize="12"
+                       Foreground="{StaticResource MutedBrush}"
+                       TextWrapping="Wrap"
+                       Text="Precision contextuelle." />
+        </StackPanel>
+    </Border>
+</Window>

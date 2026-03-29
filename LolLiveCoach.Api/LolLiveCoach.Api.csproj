@@ -4,6 +4,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>lol-live-coach-api-local</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
