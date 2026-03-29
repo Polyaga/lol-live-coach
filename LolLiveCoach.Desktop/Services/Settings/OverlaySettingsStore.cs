@@ -9,6 +9,7 @@ namespace LolLiveCoach.Desktop.Services;
 public class OverlaySettingsStore
 {
     private const string ProtectedPrefix = "dpapi:";
+    private const string LegacyPlatformBaseUrl = "http://localhost:3000";
     private static readonly JsonSerializerOptions SerializerOptions = new()
     {
         WriteIndented = true
@@ -31,7 +32,7 @@ public class OverlaySettingsStore
             await using var stream = File.OpenRead(_settingsPath);
             var storedSettings = await JsonSerializer.DeserializeAsync<OverlaySettings>(stream, SerializerOptions)
                 ?? OverlaySettings.CreateDefault();
-            return RestoreSensitiveValues(storedSettings);
+            return NormalizeForCurrentBuild(RestoreSensitiveValues(storedSettings));
         }
         catch
         {
@@ -59,6 +60,21 @@ public class OverlaySettingsStore
     private static OverlaySettings RestoreSensitiveValues(OverlaySettings settings)
     {
         return Clone(settings, Unprotect(settings.AccessKey));
+    }
+
+    private static OverlaySettings NormalizeForCurrentBuild(OverlaySettings settings)
+    {
+        var currentDefaultPlatformBaseUrl = OverlaySettings.DefaultPlatformBaseUrl;
+        if (string.IsNullOrWhiteSpace(currentDefaultPlatformBaseUrl)
+            || string.Equals(currentDefaultPlatformBaseUrl, LegacyPlatformBaseUrl, StringComparison.OrdinalIgnoreCase)
+            || !string.Equals(settings.PlatformBaseUrl, LegacyPlatformBaseUrl, StringComparison.OrdinalIgnoreCase))
+        {
+            return settings;
+        }
+
+        var normalized = Clone(settings, settings.AccessKey);
+        normalized.PlatformBaseUrl = currentDefaultPlatformBaseUrl;
+        return normalized;
     }
 
     private static OverlaySettings Clone(OverlaySettings source, string accessKey)

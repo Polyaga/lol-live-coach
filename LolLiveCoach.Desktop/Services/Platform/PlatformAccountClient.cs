@@ -48,11 +48,22 @@ public sealed class PlatformAccountClient : IDisposable
         var payloadText = await response.Content.ReadAsStringAsync(cancellationToken);
         if (!response.IsSuccessStatusCode)
         {
-            var errorPayload = JsonSerializer.Deserialize<PlatformErrorResponse>(payloadText, SerializerOptions);
-            throw new InvalidOperationException(errorPayload?.Error ?? "La connexion au compte a echoue.");
+            throw new InvalidOperationException(
+                ExtractErrorMessage(payloadText)
+                ?? $"La connexion au compte a echoue (HTTP {(int)response.StatusCode}).");
         }
 
-        var payload = JsonSerializer.Deserialize<PlatformLoginResult>(payloadText, SerializerOptions);
+        PlatformLoginResult? payload;
+        try
+        {
+            payload = JsonSerializer.Deserialize<PlatformLoginResult>(payloadText, SerializerOptions);
+        }
+        catch (JsonException)
+        {
+            throw new InvalidOperationException(
+                ExtractErrorMessage(payloadText)
+                ?? "La plateforme a renvoye une reponse invalide pendant la connexion.");
+        }
 
         if (payload is null || string.IsNullOrWhiteSpace(payload.Token))
         {
@@ -77,6 +88,31 @@ public sealed class PlatformAccountClient : IDisposable
     }
 
     private Uri BuildUri(string relativePath) => new(_platformBaseUri, relativePath);
+
+    private static string? ExtractErrorMessage(string? payloadText)
+    {
+        var normalized = payloadText?.Trim();
+        if (string.IsNullOrWhiteSpace(normalized))
+        {
+            return null;
+        }
+
+        try
+        {
+            var errorPayload = JsonSerializer.Deserialize<PlatformErrorResponse>(normalized, SerializerOptions);
+            if (!string.IsNullOrWhiteSpace(errorPayload?.Error))
+            {
+                return errorPayload.Error.Trim();
+            }
+        }
+        catch (JsonException)
+        {
+        }
+
+        return normalized.Length <= 300
+            ? normalized
+            : $"{normalized[..300]}...";
+    }
 
     public void Dispose()
     {
